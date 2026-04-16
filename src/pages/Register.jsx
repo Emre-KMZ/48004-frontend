@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ export default function Register() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -67,9 +69,22 @@ export default function Register() {
 
       if (response.status === 201) {
         setSuccess(true);
-        setTimeout(() => {
-          navigate('/login', { state: { message: 'Registration successful! Please log in.' } });
-        }, 2000);
+        
+        // Auto-login the user immediately after successful registration
+        try {
+          const authRes = await api.post('/api/login/', {
+            email: formData.email,
+            password: formData.password,
+          });
+          if (authRes.status === 200) {
+            login(authRes.data.token, authRes.data.role, authRes.data.email);
+            // Wait just a moment for the green 'Success' message effect, then dump to homepage
+            setTimeout(() => { navigate('/'); }, 1000);
+          }
+        } catch (autoLoginErr) {
+          // Fallback if auto-login fails (server fault)
+          setTimeout(() => { navigate('/login'); }, 1000);
+        }
       }
     } catch (err) {
       if (err.response && err.response.data && err.response.data.error) {
