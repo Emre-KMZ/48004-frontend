@@ -4,6 +4,7 @@ import DBHealth from "./pages/DBHealth";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ProductGallery from "./pages/ProductGallery";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function Navbar() {
@@ -65,6 +66,7 @@ export default function App() {
                 <h1>MiniStore</h1>
                 <p>Welcome to our Veterinary E-Commerce Application.</p>
                 <Navbar />
+                <ProductGallery />
               </div>
             } />
             
