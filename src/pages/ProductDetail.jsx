@@ -76,7 +76,7 @@ export default function ProductDetail() {
             `}</style>
             
             <div style={{ position: 'relative', width: '100%', height: '450px', userSelect: 'none' }}>
-                <img src={currentImg} alt="Main" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '12px', border: '1px solid #FCE4EC' }} />
+                <img src={currentImg} alt="Main" style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: '12px', border: '1px solid #FCE4EC', backgroundColor: '#fff', padding: '1rem', boxSizing: 'border-box' }} />
                 
                 {hasImages && currentImgIdx > 0 && (
                     <div key="prev-btn" className="nav-btn-left" onClick={handlePrev}>
