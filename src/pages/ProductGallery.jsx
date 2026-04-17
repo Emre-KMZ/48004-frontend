@@ -43,24 +43,7 @@ export default function ProductGallery({ sidebarOpen }) {
     return () => clearTimeout(delay);
   }, [searchQuery, activeCategory]);
 
-  const handleAddToCart = async (p) => {
-    if (auth?.token) {
-        // Authenticated -> Sync to Backend immediately
-        try {
-            await api.post('/api/cart/', { product_id: p.id, quantity: 1 });
-            alert(`Added ${p.name} to persistent Account Cart!`);
-        } catch(e) { alert("Failed to add to cart on the server."); }
-    } else {
-        // Guest -> Sync to Offline LocalStorage
-        const existing = JSON.parse(localStorage.getItem('cart') || '[]');
-        const idx = existing.findIndex(x => x.product_id === p.id);
-        if (idx >= 0) existing[idx].quantity += 1;
-        else existing.push({ product_id: p.id, quantity: 1 });
-        localStorage.setItem('cart', JSON.stringify(existing));
-        alert(`Added ${p.name} to Offline Cart!`);
-    }
-  }
-
+  // Cart functionality removed initially, mapped to dummy popup
   return (
     <div style={{ marginTop: '1rem' }}>
         <div style={{ display: 'flex', gap: '2rem' }}>
@@ -129,7 +112,7 @@ export default function ProductGallery({ sidebarOpen }) {
                                     {p.stock > 0 ? `${p.stock} units available` : 'Out of stock!'}
                                 </div>
                                 <button 
-                                    onClick={() => handleAddToCart(p)}
+                                    onClick={() => alert("Add to Basket functionality coming soon!")}
                                     disabled={p.stock <= 0}
                                     style={{ padding: '0.6rem', background: p.stock > 0 ? '#E91E63' : '#ccc', color: 'white', fontWeight: '600', border: 'none', borderRadius: '25px', cursor: p.stock > 0 ? 'pointer' : 'not-allowed', marginTop: '0.25rem', fontFamily: 'Outfit', transition: 'background 0.2s' }}>
                                     {p.stock > 0 ? 'Add to Basket' : 'Unavailable'}

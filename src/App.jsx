@@ -7,6 +7,9 @@ import Login from "./pages/Login";
 import ProductGallery from "./pages/ProductGallery";
 import ProductDetail from "./pages/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard";
+import Checkout from "./pages/Checkout";
+import Basket from "./pages/Basket";
+import OrderHistory from "./pages/OrderHistory";
 import { useState } from 'react';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -48,8 +51,8 @@ function Navbar({ onToggleSidebar }) {
            <>
               {(auth.role === 'Customer' || auth.role === 'Admin') && (
                 <>
-                  <Link to="#" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>My Basket</Link>
-                  <Link to="#" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
+                  <Link to="/basket" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>My Basket</Link>
+                  <Link to="/orders" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
                 </>
               )}
               <span style={{ color: '#eee' }}>|</span>
@@ -90,6 +93,13 @@ export default function App() {
             <Route path="/unauthorized" element={<UnauthorizedPlaceholder />} />
             <Route path="/backend-healthcheck" element={<BackendHealth />} />
             <Route path="/db-healthcheck" element={<DBHealth />} />
+
+            {/* Protected Routes (Authenticated Customer & Admin) */}
+            <Route element={<ProtectedRoute allowedRoles={['Customer', 'Admin']} />}>
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/basket" element={<Basket />} />
+              <Route path="/orders" element={<OrderHistory />} />
+            </Route>
 
             {/* Protected Routes (Admin Only) */}
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
