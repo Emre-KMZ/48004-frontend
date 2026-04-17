@@ -5,45 +5,64 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ProductGallery from "./pages/ProductGallery";
+import ProductDetail from "./pages/ProductDetail";
 import AdminDashboard from "./pages/AdminDashboard";
+import { useState } from 'react';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
-function Navbar() {
+const GlobalStyle = () => (
+  <style>{`
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+    body {
+      background-color: #FFF5F8;
+      font-family: 'Outfit', sans-serif;
+      color: #333;
+      margin: 0;
+    }
+  `}</style>
+)
+
+function Navbar({ onToggleSidebar }) {
   const { auth, logout } = useAuth();
   
   return (
-    <nav style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-      <Link to="/" style={{ padding: '0.5rem 1rem', background: '#ddd', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>Home</Link>
-      <Link to="/backend-healthcheck" style={{ padding: '0.5rem 1rem', background: '#ddd', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>Backend Status</Link>
-      
-      {/* Customer Links */}
-      {auth.role === 'Customer' && (
-        <>
-          <Link to="#" style={{ padding: '0.5rem 1rem', background: '#ccffcc', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>My Cart</Link>
-          <Link to="#" style={{ padding: '0.5rem 1rem', background: '#ccffcc', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>My Orders</Link>
-        </>
-      )}
-
-      {/* Admin Links */}
-      {auth.role === 'Admin' && (
-        <>
-          <Link to="#" style={{ padding: '0.5rem 1rem', background: '#ccffcc', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>My Cart</Link>
-          <Link to="#" style={{ padding: '0.5rem 1rem', background: '#ccffcc', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>My Orders</Link>
-          <Link to="/admin" style={{ padding: '0.5rem 1rem', background: '#ffcccc', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>Admin Dashboard</Link>
-        </>
-      )}
-
-      {/* Auth State Toggles */}
-      {auth.token ? (
-        <button onClick={() => { logout(); window.location.href='/'; }} style={{ padding: '0.5rem 1rem', background: '#cceeff', border: 'none', cursor: 'pointer', borderRadius: '4px', fontSize: '1rem' }}>
-          Logout ({auth.email})
+    <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', padding: '1rem 2.5rem', color: '#333', boxShadow: '0 2px 15px rgba(233,30,99,0.08)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+        <button onClick={onToggleSidebar} style={{ background: 'none', border: 'none', fontSize: '1.8rem', color: '#E91E63', cursor: 'pointer', padding: 0 }}>
+          ☰
         </button>
-      ) : (
-        <>
-          <Link to="/login" style={{ padding: '0.5rem 1rem', background: '#cceeff', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>Login</Link>
-          <Link to="/register" style={{ padding: '0.5rem 1rem', background: '#ccffcc', textDecoration: 'none', color: '#333', borderRadius: '4px' }}>Register</Link>
-        </>
-      )}
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <h1 style={{ margin: 0, fontSize: '1.8rem', color: '#E91E63', letterSpacing: '0.5px', fontWeight: '700' }}>MiniStore</h1>
+        </Link>
+        <div style={{ display: 'flex', gap: '1.5rem', fontWeight: '500' }}>
+          <Link to="/backend-healthcheck" style={{ color: '#666', textDecoration: 'none', fontSize: '1.05rem' }}>SysHealth</Link>
+        </div>
+      </div>
+      
+      <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', fontWeight: '500' }}>
+        {auth.role === 'Admin' && (
+          <Link to="/admin" style={{ color: '#D81B60', textDecoration: 'none', fontWeight: '700' }}>Admin Dashboard</Link>
+        )}
+        
+        {auth.token ? (
+           <>
+              {(auth.role === 'Customer' || auth.role === 'Admin') && (
+                <>
+                  <Link to="#" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>My Basket</Link>
+                  <Link to="#" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
+                </>
+              )}
+              <span style={{ color: '#eee' }}>|</span>
+              <span style={{ fontSize: '0.9rem', color: '#999' }}>{auth.email}</span>
+              <button onClick={() => { logout(); window.location.href='/'; }} style={{ padding: '0.4rem 1.2rem', background: '#FFEBEE', color: '#D32F2F', border: 'none', cursor: 'pointer', borderRadius: '20px', fontWeight: '600' }}>Logout</button>
+           </>
+        ) : (
+           <>
+              <Link to="/login" style={{ color: '#666', textDecoration: 'none', fontWeight: '600' }}>Log In</Link>
+              <Link to="/register" style={{ padding: '0.5rem 1.4rem', background: '#E91E63', color: 'white', textDecoration: 'none', borderRadius: '25px', fontWeight: '600', boxShadow: '0 4px 6px rgba(233,30,99,0.2)' }}>Register</Link>
+           </>
+        )}
+      </div>
     </nav>
   );
 }
@@ -53,21 +72,19 @@ function UnauthorizedPlaceholder() {
 }
 
 export default function App() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   return (
     <AuthProvider>
       <BrowserRouter>
-        <main style={{ fontFamily: "system-ui, sans-serif", padding: 24, margin: '0 auto', maxWidth: '800px' }}>
+        <GlobalStyle />
+        <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <main style={{ padding: "0 24px", margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <Routes>
-            <Route path="/" element={
-              <div style={{background: '#f4f4f4', padding: '2rem', borderRadius: '8px'}}>
-                <h1>MiniStore</h1>
-                <p>Welcome to our Veterinary E-Commerce Application.</p>
-                <Navbar />
-                <ProductGallery />
-              </div>
-            } />
+            <Route path="/" element={<ProductGallery sidebarOpen={sidebarOpen} />} />
             
             {/* Public Routes */}
+            <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/unauthorized" element={<UnauthorizedPlaceholder />} />
@@ -76,7 +93,7 @@ export default function App() {
 
             {/* Protected Routes (Admin Only) */}
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
-              <Route path="/admin" element={<><div style={{background: '#f4f4f4', padding: '1rem', borderRadius: '8px', marginBottom: '1rem'}}><Navbar /></div><AdminDashboard /></>} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Route>
             
           </Routes>

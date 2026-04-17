@@ -195,28 +195,28 @@ export default function AdminDashboard() {
   if (auth.role !== 'Admin') return null;
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>Admin Dashboard</h1>
-      <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #ddd', paddingBottom: '1rem', marginBottom: '2rem' }}>
-        <button onClick={()=>setActiveTab('products')} style={{ padding: '0.5rem 1rem', background: activeTab==='products'?'#0066cc':'#eee', color: activeTab==='products'?'white':'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Products Inventory</button>
-        <button onClick={()=>setActiveTab('categories')} style={{ padding: '0.5rem 1rem', background: activeTab==='categories'?'#0066cc':'#eee', color: activeTab==='categories'?'white':'black', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Category Management</button>
+    <div style={{ padding: '2rem', fontFamily: 'Outfit' }}>
+      <h1 style={{ color: '#333', fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem' }}>Admin System</h1>
+      <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #eee', paddingBottom: '1rem', marginBottom: '2rem' }}>
+        <button onClick={()=>setActiveTab('products')} style={{ padding: '0.6rem 1.2rem', background: activeTab==='products'?'#333':'#f4f4f4', color: activeTab==='products'?'white':'#555', border: 'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', transition: 'all 0.2s', boxShadow: activeTab==='products'?'0 4px 6px rgba(0,0,0,0.1)':'none' }}>Products Inventory</button>
+        <button onClick={()=>setActiveTab('categories')} style={{ padding: '0.6rem 1.2rem', background: activeTab==='categories'?'#333':'#f4f4f4', color: activeTab==='categories'?'white':'#555', border: 'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', transition: 'all 0.2s', boxShadow: activeTab==='categories'?'0 4px 6px rgba(0,0,0,0.1)':'none' }}>Category Management</button>
       </div>
 
       {activeTab === 'categories' && (
         <div>
-          <h2>Manage Categories</h2>
+          <h2 style={{ color: '#444', fontWeight: '600' }}>Manage Categories</h2>
           <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-            <input type="text" placeholder="New Category Name" value={catName} onChange={e=>setCatName(e.target.value)} required style={{ padding: '0.5rem', width: '250px' }}/>
-            <button type="submit" style={{ padding: '0.5rem 1rem', background: '#2e7d32', color: 'white', border:'none', borderRadius: '4px' }}>Add Category</button>
+            <input type="text" placeholder="New Category Name" value={catName} onChange={e=>setCatName(e.target.value)} required style={{ padding: '0.8rem', width: '250px', borderRadius: '12px', border: '2px solid #eee', fontFamily: 'Outfit', outlineColor: '#333' }}/>
+            <button type="submit" style={{ padding: '0.8rem 1.5rem', background: '#333', color: 'white', border:'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>+ Add Category</button>
           </form>
-          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-            <thead><tr style={{ background: '#eee' }}><th>ID</th><th>Name</th><th>Actions</th></tr></thead>
+          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
+            <thead><tr style={{ background: '#f4f4f4', color: '#555' }}><th style={{ padding: '1rem' }}>ID</th><th>Name</th><th>Actions</th></tr></thead>
             <tbody>
               {categories.map(c => (
-                <tr key={c.id} style={{ borderBottom: '1px solid #ddd' }}>
-                  <td style={{ padding: '0.5rem' }}>{c.id}</td>
-                  <td>{c.name}</td>
-                  <td><button onClick={()=>handleDeleteCategory(c.id)} style={{ color: 'red', cursor: 'pointer' }}>Delete</button></td>
+                <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
+                  <td style={{ padding: '1rem', color: '#666' }}>{c.id}</td>
+                  <td style={{ fontWeight: '500' }}>{c.name}</td>
+                  <td><button onClick={()=>handleDeleteCategory(c.id)} style={{ color: '#D32F2F', cursor: 'pointer', background: '#FFEBEE', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontFamily: 'Outfit' }}>Delete</button></td>
                 </tr>
               ))}
             </tbody>
@@ -226,15 +226,15 @@ export default function AdminDashboard() {
 
       {activeTab === 'products' && (
         <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-            <h2>Product Catalog</h2>
-            <button onClick={()=>setShowProductModal(true)} style={{ padding: '0.5rem 1rem', background: '#2e7d32', color: 'white', border:'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>+ Create Product</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', alignItems: 'center' }}>
+            <h2 style={{ color: '#444', fontWeight: '600' }}>Product Catalog</h2>
+            <button onClick={()=>setShowProductModal(true)} style={{ padding: '0.8rem 1.5rem', background: '#333', color: 'white', border:'none', borderRadius: '25px', cursor: 'pointer', fontWeight: '600', fontFamily: 'Outfit', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>+ Create Product</button>
           </div>
-          <input type="text" placeholder="Search products by name or keyword..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} style={{ padding: '0.5rem', width: '100%', marginBottom: '1rem', border: '1px solid #ccc', borderRadius: '4px' }}/>
+          <input type="text" placeholder="Search products by name or keyword..." value={searchTerm} onChange={e=>setSearchTerm(e.target.value)} style={{ padding: '0.8rem', width: '100%', marginBottom: '1.5rem', border: '2px solid #eee', borderRadius: '12px', fontFamily: 'Outfit', outlineColor: '#333', boxSizing: 'border-box' }}/>
           
-          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+          <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
             <thead>
-              <tr style={{ background: '#f8f8f8', borderBottom: '2px solid #ddd' }}>
+              <tr style={{ background: '#f4f4f4', color: '#555' }}>
                 <th style={{ padding: '1rem' }}>Thumb</th>
                 <th>Name</th>
                 <th>Category</th>
@@ -246,20 +246,20 @@ export default function AdminDashboard() {
             <tbody>
               {filteredProducts.map(p => (
                 <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '0.5rem' }}>
-                    <img src={p.images && p.images.length > 0 ? `${BACKEND_URL}${p.images[0].url}` : FALLBACK} alt="thumb" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }}/>
+                  <td style={{ padding: '1rem' }}>
+                    <img src={p.images && p.images.length > 0 ? `${BACKEND_URL}${p.images[0].url}` : FALLBACK} alt="thumb" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px' }}/>
                   </td>
-                  <td style={{ fontWeight: 'bold' }}>{p.name}</td>
+                  <td style={{ fontWeight: '600', color: '#333' }}>{p.name}</td>
                   <td style={{ color: '#666' }}>{p.category_name}</td>
-                  <td style={{ color: '#2e7d32', fontWeight: 'bold' }}>${p.price}</td>
-                  <td>{p.stock}</td>
+                  <td style={{ color: '#333', fontWeight: '700' }}>${p.price}</td>
+                  <td style={{ fontWeight: '600', color: p.stock > 0 ? '#333' : '#D32F2F' }}>{p.stock}</td>
                   <td>
-                    <button onClick={()=>openEditModal(p)} style={{ marginRight: '0.5rem', cursor: 'pointer', padding: '0.3rem 0.6rem' }}>Edit</button>
-                    <button onClick={()=>handleDeleteProduct(p.id)} style={{ color: 'white', background: '#d32f2f', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '0.3rem 0.6rem' }}>Delete</button>
+                    <button onClick={()=>openEditModal(p)} style={{ marginRight: '0.5rem', cursor: 'pointer', padding: '0.4rem 0.8rem', background: '#eee', color: '#333', border: 'none', borderRadius: '8px', fontWeight: '600', fontFamily: 'Outfit' }}>Edit</button>
+                    <button onClick={()=>handleDeleteProduct(p.id)} style={{ color: '#D32F2F', background: '#FFEBEE', border: 'none', borderRadius: '8px', cursor: 'pointer', padding: '0.4rem 0.8rem', fontWeight: '600', fontFamily: 'Outfit' }}>Delete</button>
                   </td>
                 </tr>
               ))}
-              {filteredProducts.length===0 && <tr><td colSpan="6" style={{textAlign:'center', padding: '1rem'}}>No products found.</td></tr>}
+              {filteredProducts.length===0 && <tr><td colSpan="6" style={{textAlign:'center', padding: '2rem', color: '#888'}}>No products found.</td></tr>}
             </tbody>
           </table>
         </div>
