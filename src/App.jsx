@@ -5,6 +5,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ProductGallery from "./pages/ProductGallery";
+import AdminDashboard from "./pages/AdminDashboard";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
 function Navbar() {
@@ -51,10 +52,6 @@ function UnauthorizedPlaceholder() {
   return <div style={{textAlign: 'center', padding: '2rem'}}><h2>403 - Unauthorized</h2><p>You do not have permission to view this page.</p><Link to="/">Go Home</Link></div>;
 }
 
-function AdminDashboardPlaceholder() {
-  return <div style={{textAlign: 'center', padding: '2rem'}}><h2>Admin Dashboard</h2><p>Secure area! Only admins can see this.</p><Link to="/">Go Home</Link></div>;
-}
-
 export default function App() {
   return (
     <AuthProvider>
@@ -79,7 +76,7 @@ export default function App() {
 
             {/* Protected Routes (Admin Only) */}
             <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>
-              <Route path="/admin" element={<AdminDashboardPlaceholder />} />
+              <Route path="/admin" element={<><div style={{background: '#f4f4f4', padding: '1rem', borderRadius: '8px', marginBottom: '1rem'}}><Navbar /></div><AdminDashboard /></>} />
             </Route>
             
           </Routes>

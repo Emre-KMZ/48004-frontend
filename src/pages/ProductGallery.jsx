@@ -35,7 +35,8 @@ export default function ProductGallery() {
         <h2 style={{marginTop: '2rem'}}>Product Catalog</h2>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginTop: '1rem' }}>
         {products.map(p => {
-            const imageUrl = p.image_url ? `${BACKEND_URL}${p.image_url}` : FALLBACK_IMAGE;
+            // Updated schema points to the OneToMany Image array
+            const imageUrl = p.images && p.images.length > 0 ? `${BACKEND_URL}${p.images[0].url}` : FALLBACK_IMAGE;
 
             return (
             <div key={p.id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '1rem', width: '250px', background: '#fff', boxShadow: '0 2px 5px rgba(0,0,0,0.05)' }}>
