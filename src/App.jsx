@@ -12,6 +12,7 @@ import Basket from "./pages/Basket";
 import OrderHistory from "./pages/OrderHistory";
 import { useState } from 'react';
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { CartProvider, useCart } from "./context/CartContext";
 
 const GlobalStyle = () => (
   <style>{`
@@ -27,6 +28,7 @@ const GlobalStyle = () => (
 
 function Navbar({ onToggleSidebar }) {
   const { auth, logout } = useAuth();
+  const { totalItems } = useCart();
   
   return (
     <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', padding: '1rem 2.5rem', color: '#333', boxShadow: '0 2px 15px rgba(233,30,99,0.08)' }}>
@@ -51,7 +53,11 @@ function Navbar({ onToggleSidebar }) {
            <>
               {(auth.role === 'Customer' || auth.role === 'Admin') && (
                 <>
-                  <Link to="/basket" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>My Basket</Link>
+                  <Link to="/basket" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>
+                    My Basket{totalItems > 0 && (
+                      <span style={{ marginLeft: '6px', background: '#E91E63', color: 'white', borderRadius: '12px', padding: '1px 8px', fontSize: '0.8rem', fontWeight: '700' }}>{totalItems}</span>
+                    )}
+                  </Link>
                   <Link to="/orders" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
                 </>
               )}
@@ -79,6 +85,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <CartProvider>
       <BrowserRouter>
         <GlobalStyle />
         <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
@@ -109,6 +116,7 @@ export default function App() {
           </Routes>
         </main>
       </BrowserRouter>
+      </CartProvider>
     </AuthProvider>
   );
 }
