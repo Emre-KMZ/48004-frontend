@@ -48,18 +48,17 @@ function Navbar({ onToggleSidebar }) {
         {auth.role === 'Admin' && (
           <Link to="/admin" style={{ color: '#D81B60', textDecoration: 'none', fontWeight: '700' }}>Admin Dashboard</Link>
         )}
-        
+
+        <Link to="/basket" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>
+          My Basket{totalItems > 0 && (
+            <span style={{ marginLeft: '6px', background: '#E91E63', color: 'white', borderRadius: '12px', padding: '1px 8px', fontSize: '0.8rem', fontWeight: '700' }}>{totalItems}</span>
+          )}
+        </Link>
+
         {auth.token ? (
            <>
               {(auth.role === 'Customer' || auth.role === 'Admin') && (
-                <>
-                  <Link to="/basket" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>
-                    My Basket{totalItems > 0 && (
-                      <span style={{ marginLeft: '6px', background: '#E91E63', color: 'white', borderRadius: '12px', padding: '1px 8px', fontSize: '0.8rem', fontWeight: '700' }}>{totalItems}</span>
-                    )}
-                  </Link>
-                  <Link to="/orders" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
-                </>
+                <Link to="/orders" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
               )}
               <span style={{ color: '#eee' }}>|</span>
               <span style={{ fontSize: '0.9rem', color: '#999' }}>{auth.email}</span>
