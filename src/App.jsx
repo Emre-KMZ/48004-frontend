@@ -100,10 +100,12 @@ export default function App() {
             <Route path="/backend-healthcheck" element={<BackendHealth />} />
             <Route path="/db-healthcheck" element={<DBHealth />} />
 
+            {/* Public basket (guests have localStorage cart) */}
+            <Route path="/basket" element={<Basket />} />
+
             {/* Protected Routes (Authenticated Customer & Admin) */}
             <Route element={<ProtectedRoute allowedRoles={['Customer', 'Admin']} />}>
               <Route path="/checkout" element={<Checkout />} />
-              <Route path="/basket" element={<Basket />} />
               <Route path="/orders" element={<OrderHistory />} />
             </Route>
 
