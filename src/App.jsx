@@ -12,6 +12,7 @@ import Basket from "./pages/Basket";
 import OrderHistory from "./pages/OrderHistory";
 import { useState } from 'react';
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { CartProvider, useCart } from "./context/CartContext";
 
 const GlobalStyle = () => (
   <style>{`
@@ -27,6 +28,7 @@ const GlobalStyle = () => (
 
 function Navbar({ onToggleSidebar }) {
   const { auth, logout } = useAuth();
+  const { totalItems } = useCart();
   
   return (
     <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', padding: '1rem 2.5rem', color: '#333', boxShadow: '0 2px 15px rgba(233,30,99,0.08)' }}>
@@ -46,14 +48,17 @@ function Navbar({ onToggleSidebar }) {
         {auth.role === 'Admin' && (
           <Link to="/admin" style={{ color: '#D81B60', textDecoration: 'none', fontWeight: '700' }}>Admin Dashboard</Link>
         )}
-        
+
+        <Link to="/basket" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>
+          My Basket{totalItems > 0 && (
+            <span style={{ marginLeft: '6px', background: '#E91E63', color: 'white', borderRadius: '12px', padding: '1px 8px', fontSize: '0.8rem', fontWeight: '700' }}>{totalItems}</span>
+          )}
+        </Link>
+
         {auth.token ? (
            <>
               {(auth.role === 'Customer' || auth.role === 'Admin') && (
-                <>
-                  <Link to="/basket" style={{ color: '#333', textDecoration: 'none', fontWeight: '600' }}>My Basket</Link>
-                  <Link to="/orders" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
-                </>
+                <Link to="/orders" style={{ color: '#666', textDecoration: 'none' }}>Order History</Link>
               )}
               <span style={{ color: '#eee' }}>|</span>
               <span style={{ fontSize: '0.9rem', color: '#999' }}>{auth.email}</span>
@@ -79,6 +84,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <CartProvider>
       <BrowserRouter>
         <GlobalStyle />
         <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
@@ -94,10 +100,12 @@ export default function App() {
             <Route path="/backend-healthcheck" element={<BackendHealth />} />
             <Route path="/db-healthcheck" element={<DBHealth />} />
 
+            {/* Public basket (guests have localStorage cart) */}
+            <Route path="/basket" element={<Basket />} />
+
             {/* Protected Routes (Authenticated Customer & Admin) */}
             <Route element={<ProtectedRoute allowedRoles={['Customer', 'Admin']} />}>
               <Route path="/checkout" element={<Checkout />} />
-              <Route path="/basket" element={<Basket />} />
               <Route path="/orders" element={<OrderHistory />} />
             </Route>
 
@@ -109,6 +117,7 @@ export default function App() {
           </Routes>
         </main>
       </BrowserRouter>
+      </CartProvider>
     </AuthProvider>
   );
 }
