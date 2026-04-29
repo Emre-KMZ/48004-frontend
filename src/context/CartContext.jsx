@@ -98,11 +98,16 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const clearCart = () => {
+    setItems([]);
+    localStorage.removeItem(GUEST_CART_KEY);
+  };
+
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
   const totalPrice = items.reduce((sum, i) => sum + parseFloat(i.price) * i.quantity, 0).toFixed(2);
 
   return (
-    <CartContext.Provider value={{ items, loading, addItem, updateItem, removeItem, totalItems, totalPrice }}>
+    <CartContext.Provider value={{ items, loading, addItem, updateItem, removeItem, clearCart, totalItems, totalPrice }}>
       {children}
     </CartContext.Provider>
   );
