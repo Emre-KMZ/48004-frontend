@@ -10,6 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Checkout from "./pages/Checkout";
 import Basket from "./pages/Basket";
 import OrderHistory from "./pages/OrderHistory";
+import OrderDetail from "./pages/OrderDetail";
 import { useState } from 'react';
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider, useCart } from "./context/CartContext";
@@ -107,6 +108,7 @@ export default function App() {
             <Route element={<ProtectedRoute allowedRoles={['Customer', 'Admin']} />}>
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/orders" element={<OrderHistory />} />
+              <Route path="/orders/:id" element={<OrderDetail />} />
             </Route>
 
             {/* Protected Routes (Admin Only) */}
