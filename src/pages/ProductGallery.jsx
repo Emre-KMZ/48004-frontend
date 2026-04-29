@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import api from '../api/axios';
@@ -36,7 +36,8 @@ export default function ProductGallery({ sidebarOpen }) {
   const [addedMap, setAddedMap] = useState({});
 
   // Filters
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const searchQuery = searchParams.get('search') || '';
   const [activeCategory, setActiveCategory] = useState('');
 
   useEffect(() => {
@@ -103,25 +104,14 @@ export default function ProductGallery({ sidebarOpen }) {
         {/* RIGHT COMPONENT: MAIN GRID */}
         <section style={{ flex: 1, minWidth: 0 }}>
 
-          {/* TOP BAR: SEARCH BAR */}
-          <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', maxWidth: '600px' }}>
-            <input
-              type="text"
-              placeholder="Search by keywords or product name..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              style={{ flex: 1, padding: '1rem', fontSize: '1rem', borderRadius: '12px', border: '1px solid #F8BBD0', outlineColor: '#E91E63', fontFamily: 'Outfit' }}
-            />
-            <button
-              title="Search"
-              style={{ width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8BBD0', color: '#D81B60', border: 'none', borderRadius: '50%', cursor: 'pointer', fontSize: '1.1rem', transition: 'all 0.2s', alignSelf: 'center', flexShrink: 0, boxShadow: '0 2px 5px rgba(233,30,99,0.15)' }}>
-              ➜
-            </button>
-          </div>
-
           {loading && <div style={{ textAlign: 'center', padding: '2rem' }}>Loading catalog...</div>}
           {error && <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>{error}</div>}
-          {!loading && !error && products.length === 0 && <div style={{ textAlign: 'center', padding: '2rem' }}>No products match your criteria.</div>}
+          {!loading && !error && products.length === 0 && (
+            <div style={{ textAlign: 'center', padding: '3rem 2rem', background: '#fff', borderRadius: '16px', border: '1px solid #FCE4EC' }}>
+              <h2 style={{ color: '#D81B60', marginBottom: '0.5rem' }}>{searchQuery ? `No results found for "${searchQuery}"` : "No products found."}</h2>
+              <p style={{ color: '#666' }}>Try adjusting your keywords or browse our categories.</p>
+            </div>
+          )}
 
           {/* PRODUCT GRID */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 200px)', gap: '1.5rem', justifyContent: 'flex-start' }}>
