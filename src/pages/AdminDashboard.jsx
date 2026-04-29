@@ -27,6 +27,12 @@ export default function AdminDashboard() {
 
   // Category Form State
   const [catName, setCatName] = useState('');
+  const [catDescription, setCatDescription] = useState('');
+  const [catImage, setCatImage] = useState(null);
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [editCatName, setEditCatName] = useState('');
+  const [editCatDescription, setEditCatDescription] = useState('');
+  const [editCatImage, setEditCatImage] = useState(null);
 
   useEffect(() => {
     if (auth.role !== 'Admin') {
@@ -40,7 +46,7 @@ export default function AdminDashboard() {
     try {
       const catRes = await api.get('/api/categories/');
       setCategories(catRes.data.categories);
-      const prodRes = await api.get('/api/products/'); // The public endpoint returns everything we need for the table
+      const prodRes = await api.get('/api/products/');
       setProducts(prodRes.data.products);
     } catch(e) { console.error("Error fetching admin data", e); }
   }
@@ -49,18 +55,44 @@ export default function AdminDashboard() {
   const handleAddCategory = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/api/admin/categories/', { name: catName });
+      const fd = new FormData();
+      fd.append('name', catName);
+      fd.append('description', catDescription);
+      if (catImage) fd.append('image', catImage);
+      await api.post('/api/admin/categories/', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
       setCatName('');
+      setCatDescription('');
+      setCatImage(null);
       fetchData();
     } catch(e) { alert("Failed to add category"); }
   }
-  
+
+  const handleEditCategory = async (id) => {
+    try {
+      const fd = new FormData();
+      fd.append('name', editCatName);
+      fd.append('description', editCatDescription);
+      if (editCatImage) fd.append('image', editCatImage);
+      await api.post(`/api/admin/categories/${id}/`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+      setEditingCategory(null);
+      setEditCatImage(null);
+      fetchData();
+    } catch(e) { alert("Failed to update category"); }
+  }
+
   const handleDeleteCategory = async (id) => {
     if(!window.confirm("Delete category? This might drop assigned products!")) return;
     try {
       await api.delete(`/api/admin/categories/${id}/`);
       fetchData();
     } catch(e) { alert("Failed to delete category"); }
+  }
+
+  const openEditCategory = (c) => {
+    setEditingCategory(c.id);
+    setEditCatName(c.name);
+    setEditCatDescription(c.description || '');
+    setEditCatImage(null);
   }
 
   // --- PRODUCT LOGIC ---
@@ -205,18 +237,57 @@ export default function AdminDashboard() {
       {activeTab === 'categories' && (
         <div>
           <h2 style={{ color: '#444', fontWeight: '600' }}>Manage Categories</h2>
-          <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
-            <input type="text" placeholder="New Category Name" value={catName} onChange={e=>setCatName(e.target.value)} required style={{ padding: '0.8rem', width: '250px', borderRadius: '12px', border: '2px solid #eee', fontFamily: 'Outfit', outlineColor: '#333' }}/>
-            <button type="submit" style={{ padding: '0.8rem 1.5rem', background: '#333', color: 'white', border:'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>+ Add Category</button>
+          <form onSubmit={handleAddCategory} style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontSize: '0.85rem', color: '#666' }}>Name</label>
+              <input type="text" placeholder="Category Name" value={catName} onChange={e=>setCatName(e.target.value)} required style={{ padding: '0.8rem', width: '200px', borderRadius: '12px', border: '2px solid #eee', fontFamily: 'Outfit', outlineColor: '#333' }}/>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontSize: '0.85rem', color: '#666' }}>Description</label>
+              <input type="text" placeholder="Brief description" value={catDescription} onChange={e=>setCatDescription(e.target.value)} style={{ padding: '0.8rem', width: '250px', borderRadius: '12px', border: '2px solid #eee', fontFamily: 'Outfit', outlineColor: '#333' }}/>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+              <label style={{ fontSize: '0.85rem', color: '#666' }}>Image</label>
+              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setCatImage(e.target.files[0] || null)} style={{ fontSize: '0.85rem' }}/>
+            </div>
+            <button type="submit" style={{ padding: '0.8rem 1.5rem', background: '#333', color: 'white', border:'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', alignSelf: 'flex-end' }}>+ Add Category</button>
           </form>
           <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', background: '#fff', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 15px rgba(0,0,0,0.03)' }}>
-            <thead><tr style={{ background: '#f4f4f4', color: '#555' }}><th style={{ padding: '1rem' }}>ID</th><th>Name</th><th>Actions</th></tr></thead>
+            <thead><tr style={{ background: '#f4f4f4', color: '#555' }}><th style={{ padding: '1rem' }}>Image</th><th>Name</th><th>Items</th><th>Actions</th></tr></thead>
             <tbody>
               {categories.map(c => (
                 <tr key={c.id} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: '1rem', color: '#666' }}>{c.id}</td>
-                  <td style={{ fontWeight: '500' }}>{c.name}</td>
-                  <td><button onClick={()=>handleDeleteCategory(c.id)} style={{ color: '#D32F2F', cursor: 'pointer', background: '#FFEBEE', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontFamily: 'Outfit' }}>Delete</button></td>
+                  <td style={{ padding: '1rem' }}>
+                    <img src={c.image_url ? `${BACKEND_URL}${c.image_url}` : FALLBACK} alt={c.name} style={{ width: '50px', height: '50px', objectFit: 'cover', borderRadius: '8px' }}/>
+                  </td>
+                  <td>
+                    {editingCategory === c.id ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <input type="text" value={editCatName} onChange={e=>setEditCatName(e.target.value)} style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #ddd', fontFamily: 'Outfit' }}/>
+                        <input type="text" value={editCatDescription} onChange={e=>setEditCatDescription(e.target.value)} placeholder="Description" style={{ padding: '0.5rem', borderRadius: '8px', border: '1px solid #ddd', fontFamily: 'Outfit' }}/>
+                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e=>setEditCatImage(e.target.files[0] || null)} style={{ fontSize: '0.85rem' }}/>
+                      </div>
+                    ) : (
+                      <div>
+                        <span style={{ fontWeight: '500' }}>{c.name}</span>
+                        {c.description && <p style={{ margin: '0.25rem 0 0', fontSize: '0.8rem', color: '#888' }}>{c.description}</p>}
+                      </div>
+                    )}
+                  </td>
+                  <td style={{ color: '#666', fontWeight: '600' }}>{c.count ?? 0}</td>
+                  <td>
+                    {editingCategory === c.id ? (
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={()=>handleEditCategory(c.id)} style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', fontFamily: 'Outfit' }}>Save</button>
+                        <button onClick={()=>setEditingCategory(null)} style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', background: '#eee', color: '#333', border: 'none', borderRadius: '8px', fontWeight: '600', fontFamily: 'Outfit' }}>Cancel</button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button onClick={()=>openEditCategory(c)} style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', background: '#eee', color: '#333', border: 'none', borderRadius: '8px', fontWeight: '600', fontFamily: 'Outfit' }}>Edit</button>
+                        <button onClick={()=>handleDeleteCategory(c.id)} style={{ color: '#D32F2F', cursor: 'pointer', background: '#FFEBEE', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: '600', fontFamily: 'Outfit' }}>Delete</button>
+                      </div>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

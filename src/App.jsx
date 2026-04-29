@@ -10,7 +10,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Checkout from "./pages/Checkout";
 import Basket from "./pages/Basket";
 import OrderHistory from "./pages/OrderHistory";
-import { useState } from 'react';
+import Categories from "./pages/Categories";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider, useCart } from "./context/CartContext";
 
@@ -26,20 +26,18 @@ const GlobalStyle = () => (
   `}</style>
 )
 
-function Navbar({ onToggleSidebar }) {
+function Navbar() {
   const { auth, logout } = useAuth();
   const { totalItems } = useCart();
   
   return (
     <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', padding: '1rem 2.5rem', color: '#333', boxShadow: '0 2px 15px rgba(233,30,99,0.08)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-        <button onClick={onToggleSidebar} style={{ background: 'none', border: 'none', fontSize: '1.8rem', color: '#E91E63', cursor: 'pointer', padding: 0 }}>
-          ☰
-        </button>
         <Link to="/" style={{ textDecoration: 'none' }}>
           <h1 style={{ margin: 0, fontSize: '1.8rem', color: '#E91E63', letterSpacing: '0.5px', fontWeight: '700' }}>MiniStore</h1>
         </Link>
         <div style={{ display: 'flex', gap: '1.5rem', fontWeight: '500' }}>
+          <Link to="/categories" style={{ color: '#D81B60', textDecoration: 'none', fontSize: '1.05rem', fontWeight: '600' }}>Categories</Link>
           <Link to="/backend-healthcheck" style={{ color: '#666', textDecoration: 'none', fontSize: '1.05rem' }}>SysHealth</Link>
         </div>
       </div>
@@ -80,22 +78,21 @@ function UnauthorizedPlaceholder() {
 }
 
 export default function App() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
     <AuthProvider>
       <CartProvider>
       <BrowserRouter>
         <GlobalStyle />
-        <Navbar onToggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
+        <Navbar />
         <main style={{ padding: "0 24px", margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
           <Routes>
-            <Route path="/" element={<ProductGallery sidebarOpen={sidebarOpen} />} />
+            <Route path="/" element={<ProductGallery />} />
             
             {/* Public Routes */}
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/categories" element={<Categories />} />
             <Route path="/unauthorized" element={<UnauthorizedPlaceholder />} />
             <Route path="/backend-healthcheck" element={<BackendHealth />} />
             <Route path="/db-healthcheck" element={<DBHealth />} />
