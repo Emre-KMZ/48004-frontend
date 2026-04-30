@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { DollarSign, ShoppingCart, Users } from "lucide-react";
 
 const BACKEND_URL = 'http://localhost:8000';
 const FALLBACK = 'https://placehold.co/150x150?text=No+Img';
@@ -28,6 +29,9 @@ export default function AdminDashboard() {
   // Category Form State
   const [catName, setCatName] = useState('');
 
+  const [stats, setStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+
   useEffect(() => {
     if (auth.role !== 'Admin') {
       navigate('/');
@@ -38,11 +42,22 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
+    setStatsLoading(true);
+
       const catRes = await api.get('/api/categories/');
       setCategories(catRes.data.categories);
+
       const prodRes = await api.get('/api/products/'); // The public endpoint returns everything we need for the table
       setProducts(prodRes.data.products);
-    } catch(e) { console.error("Error fetching admin data", e); }
+
+      const statsRes = await api.get('/api/admin/stats/summary/');
+      setStats(statsRes.data);
+
+    } catch(e) { 
+      console.error("Error fetching admin data", e); 
+    } finally {
+      setStatsLoading(false);
+    }
   }
 
   // --- CATEGORY LOGIC ---
@@ -189,6 +204,54 @@ export default function AdminDashboard() {
     } catch(err) { console.error("Failed to sync order", err); }
   }
 
+  const formatCurrency = (value) => {
+    const number = Number(value || 0);
+    return number.toLocaleString('en-US', {
+      style: 'currency',
+      currency: 'USD',
+    });
+  };
+
+  const formatNumber = (value) => {
+    return Number(value || 0).toLocaleString('en-US');
+  };
+
+  function StatCard({ title, value, icon }) {
+    return (
+      <div style={{
+        background: '#fff',
+        borderRadius: '18px',
+        padding: '1.5rem',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+        border: '1px solid #f1f1f1',
+        flex: 1,
+        minWidth: '220px'
+      }}>
+        <div style={{ marginBottom: '0.7rem' }}>{icon}</div>
+        <p style={{ margin: 0, color: '#777', fontWeight: '600' }}>{title}</p>
+        <h2 style={{ margin: '0.4rem 0 0', color: '#333', fontSize: '2rem' }}>{value}</h2>
+      </div>
+    );
+  }
+
+  function StatCardSkeleton() {
+    return (
+      <div style={{
+        background: '#fff',
+        borderRadius: '18px',
+        padding: '1.5rem',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+        border: '1px solid #f1f1f1',
+        flex: 1,
+        minWidth: '220px'
+      }}>
+        <div style={{ height: '32px', width: '32px', background: '#eee', borderRadius: '8px', marginBottom: '1rem' }} />
+        <div style={{ height: '16px', width: '120px', background: '#eee', borderRadius: '8px', marginBottom: '0.8rem' }} />
+        <div style={{ height: '32px', width: '160px', background: '#eee', borderRadius: '8px' }} />
+      </div>
+    );
+  }
+
   // --- RENDERERS ---
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.keywords.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -200,6 +263,39 @@ export default function AdminDashboard() {
       <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #eee', paddingBottom: '1rem', marginBottom: '2rem' }}>
         <button onClick={()=>setActiveTab('products')} style={{ padding: '0.6rem 1.2rem', background: activeTab==='products'?'#333':'#f4f4f4', color: activeTab==='products'?'white':'#555', border: 'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', transition: 'all 0.2s', boxShadow: activeTab==='products'?'0 4px 6px rgba(0,0,0,0.1)':'none' }}>Products Inventory</button>
         <button onClick={()=>setActiveTab('categories')} style={{ padding: '0.6rem 1.2rem', background: activeTab==='categories'?'#333':'#f4f4f4', color: activeTab==='categories'?'white':'#555', border: 'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', transition: 'all 0.2s', boxShadow: activeTab==='categories'?'0 4px 6px rgba(0,0,0,0.1)':'none' }}>Category Management</button>
+      </div>
+
+      <div style={{
+        display: 'flex',
+        gap: '1rem',
+        flexWrap: 'wrap',
+        marginBottom: '2rem'
+      }}>
+        {statsLoading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <StatCard
+              title="Total Revenue"
+              value={formatCurrency(stats?.total_revenue)}
+              icon={<DollarSign size={28} color="#22c55e" />}
+            />
+            <StatCard
+              title="Total Orders"
+              value={formatNumber(stats?.total_orders)}
+              icon={<ShoppingCart size={28} color="#3B82F6" />}
+            />
+            <StatCard
+              title="Total Customers"
+              value={formatNumber(stats?.total_customers)}
+              icon={<Users size={28} color="#a855f7" />}
+            />
+          </>
+        )}
       </div>
 
       {activeTab === 'categories' && (
