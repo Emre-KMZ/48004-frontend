@@ -33,9 +33,13 @@ export default function ProductDetail() {
 
   const handleAddToBasket = async () => {
     if (!product || product.stock <= 0) return;
-    await addItem(product, qty);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
+    try {
+      await addItem(product, Math.min(qty, product.stock));
+      setJustAdded(true);
+      setTimeout(() => setJustAdded(false), 1500);
+    } catch (err) {
+      setError(err.message || 'Unable to add product to basket.');
+    }
   };
 
   if (error) return <div style={{ padding: '2rem', color: 'red', textAlign: 'center', fontFamily: 'Outfit' }}>{error} - <Link to="/">Go Back</Link></div>;
@@ -128,7 +132,8 @@ export default function ProductDetail() {
                 <span style={{ minWidth: '36px', textAlign: 'center', fontSize: '1.1rem', fontWeight: '600' }}>{qty}</span>
                 <button
                   onClick={() => setQty(q => q + 1)}
-                  style={{ width: '36px', height: '36px', border: '1px solid #F8BBD0', background: '#FFF5F8', color: '#D81B60', borderRadius: '8px', cursor: 'pointer', fontSize: '1.2rem', fontWeight: '700' }}>
+                  disabled={qty >= product.stock}
+                  style={{ width: '36px', height: '36px', border: '1px solid #F8BBD0', background: '#FFF5F8', color: '#D81B60', borderRadius: '8px', cursor: qty >= product.stock ? 'not-allowed' : 'pointer', opacity: qty >= product.stock ? 0.4 : 1, fontSize: '1.2rem', fontWeight: '700' }}>
                   +
                 </button>
               </div>

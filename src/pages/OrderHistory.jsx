@@ -75,10 +75,24 @@ export default function OrderHistory() {
         {orders.map(order => {
           const statusStyle = STATUS_STYLES[order.status] || { background: '#F5F5F5', color: '#555' };
           return (
-            <div
+            <Link
               key={order.order_id}
-              style={{ background: '#fff', border: '1px solid #FCE4EC', borderRadius: '16px', padding: '1.25rem 1.5rem', boxShadow: '0 2px 8px rgba(233,30,99,0.05)', display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-
+              to={`/orders/${order.order_id}`}
+              style={{
+                background: '#fff',
+                border: '1px solid #FCE4EC',
+                borderRadius: '16px',
+                padding: '1.25rem 1.5rem',
+                boxShadow: '0 2px 8px rgba(233,30,99,0.05)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.5rem',
+                flexWrap: 'wrap',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                transition: '0.2s ease'
+              }}
+            >
               <div style={{ flex: '0 0 auto' }}>
                 <div style={{ fontSize: '0.78rem', color: '#aaa', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Order</div>
                 <div style={{ fontSize: '1.1rem', fontWeight: '700', color: '#D81B60' }}>#{order.order_id}</div>
@@ -99,7 +113,7 @@ export default function OrderHistory() {
                 <div style={{ fontSize: '0.78rem', color: '#aaa', fontWeight: '500', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total</div>
                 <div style={{ fontSize: '1.2rem', fontWeight: '700', color: '#333' }}>${parseFloat(order.total_price).toFixed(2)}</div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>

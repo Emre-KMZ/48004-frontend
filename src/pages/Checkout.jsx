@@ -9,6 +9,9 @@ export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const navigate = useNavigate();
   const [address, setAddress] = useState('');
+  const [contactName, setContactName] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,13 +20,28 @@ export default function Checkout() {
       setError('Please enter a shipping address.');
       return;
     }
+    if (!contactName.trim() || !contactEmail.trim()) {
+      setError('Please enter contact name and email.');
+      return;
+    }
     setError('');
     setSubmitting(true);
     try {
-      await api.post('/api/checkout/', { shipping_address: address.trim() });
+      await api.post('/api/checkout/', {
+        shipping_address: address.trim(),
+        contact_name: contactName.trim(),
+        contact_email: contactEmail.trim(),
+        contact_phone: contactPhone.trim(),
+      });
       clearCart();
       navigate('/orders');
     } catch (err) {
+      if (err.response?.status === 409) {
+        navigate('/basket', {
+          state: { inventoryError: 'Inventory changed: Some items in your cart are no longer available.' },
+        });
+        return;
+      }
       setError(err.response?.data?.error || 'Failed to place order. Please try again.');
     } finally {
       setSubmitting(false);
@@ -91,6 +109,29 @@ export default function Checkout() {
               rows={5}
               style={{ width: '100%', padding: '0.9rem', fontSize: '0.95rem', borderRadius: '12px', border: '1px solid #F8BBD0', outlineColor: '#E91E63', fontFamily: 'Outfit', resize: 'vertical', boxSizing: 'border-box', lineHeight: '1.5' }}
             />
+            <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <input
+                type="text"
+                value={contactName}
+                onChange={e => setContactName(e.target.value)}
+                placeholder="Contact full name"
+                style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', borderRadius: '10px', border: '1px solid #F8BBD0', outlineColor: '#E91E63', fontFamily: 'Outfit', boxSizing: 'border-box' }}
+              />
+              <input
+                type="email"
+                value={contactEmail}
+                onChange={e => setContactEmail(e.target.value)}
+                placeholder="Contact email"
+                style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', borderRadius: '10px', border: '1px solid #F8BBD0', outlineColor: '#E91E63', fontFamily: 'Outfit', boxSizing: 'border-box' }}
+              />
+              <input
+                type="text"
+                value={contactPhone}
+                onChange={e => setContactPhone(e.target.value)}
+                placeholder="Contact phone (optional)"
+                style={{ width: '100%', padding: '0.75rem', fontSize: '0.95rem', borderRadius: '10px', border: '1px solid #F8BBD0', outlineColor: '#E91E63', fontFamily: 'Outfit', boxSizing: 'border-box' }}
+              />
+            </div>
           </div>
 
           {error && (

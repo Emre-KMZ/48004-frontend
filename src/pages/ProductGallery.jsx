@@ -7,7 +7,8 @@ import api from '../api/axios';
 const FALLBACK_IMAGE = 'https://placehold.co/600x400/eeeeee/999999?text=No+Image+Available';
 const BACKEND_URL = 'http://localhost:8000';
 
-function QtyInput({ value, onChange }) {
+function QtyInput({ value, max, onChange }) {
+  const disableIncrement = value >= max;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       <button
@@ -17,8 +18,9 @@ function QtyInput({ value, onChange }) {
       </button>
       <span style={{ minWidth: '24px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '600' }}>{value}</span>
       <button
-        onClick={() => onChange(value + 1)}
-        style={{ width: '26px', height: '26px', border: '1px solid #F8BBD0', background: '#FFF5F8', color: '#D81B60', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', fontWeight: '700', lineHeight: 1 }}>
+        onClick={() => onChange(Math.min(max, value + 1))}
+        disabled={disableIncrement}
+        style={{ width: '26px', height: '26px', border: '1px solid #F8BBD0', background: '#FFF5F8', color: '#D81B60', borderRadius: '6px', cursor: disableIncrement ? 'not-allowed' : 'pointer', opacity: disableIncrement ? 0.4 : 1, fontSize: '1rem', fontWeight: '700', lineHeight: 1 }}>
         +
       </button>
     </div>
@@ -63,18 +65,39 @@ export default function ProductGallery() {
   const getQty = (productId) => quantities[productId] || 1;
 
   const setQty = (productId, value) => {
-    setQuantities(prev => ({ ...prev, [productId]: value }));
+    const product = products.find(p => p.id === productId);
+    const max = Math.max(1, Number(product?.stock || 1));
+    setQuantities(prev => ({ ...prev, [productId]: Math.min(max, Math.max(1, value)) }));
   };
 
   const handleAddToBasket = async (product) => {
     if (product.stock <= 0) return;
-    await addItem(product, getQty(product.id));
-    setAddedMap(prev => ({ ...prev, [product.id]: true }));
-    setTimeout(() => setAddedMap(prev => ({ ...prev, [product.id]: false })), 1500);
+    try {
+      await addItem(product, Math.min(getQty(product.id), product.stock));
+      setAddedMap(prev => ({ ...prev, [product.id]: true }));
+      setTimeout(() => setAddedMap(prev => ({ ...prev, [product.id]: false })), 1500);
+    } catch (err) {
+      setError(err.message || 'Unable to add product to basket.');
+    }
   };
 
   return (
     <div style={{ marginTop: '1rem' }}>
+      {/* TOP BAR: SEARCH BAR */}
+      <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.5rem', maxWidth: '600px' }}>
+        <input
+          type="text"
+          placeholder="Search by keywords or product name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ flex: 1, padding: '1rem', fontSize: '1rem', borderRadius: '12px', border: '1px solid #F8BBD0', outlineColor: '#E91E63', fontFamily: 'Outfit' }}
+        />
+        <button
+          title="Search"
+          style={{ width: '46px', height: '46px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8BBD0', color: '#D81B60', border: 'none', borderRadius: '50%', cursor: 'pointer', fontSize: '1.1rem', transition: 'all 0.2s', alignSelf: 'center', flexShrink: 0, boxShadow: '0 2px 5px rgba(233,30,99,0.15)' }}>
+          ➜
+        </button>
+      </div>
 
       {/* Active filter indicator */}
       {(activeCategory || searchQuery) && (
@@ -124,6 +147,25 @@ export default function ProductGallery() {
                 <div style={{ fontWeight: '700', fontSize: '1.3rem', color: '#333' }}>${p.price}</div>
                 <div style={{ fontSize: '0.8rem', color: p.stock > 0 ? '#888' : '#D32F2F', fontWeight: p.stock > 0 ? '500' : '700' }}>
                   {p.stock > 0 ? `${p.stock} units available` : 'Out of stock!'}
+                </div>
+                {p.stock > 0 && (
+                  <QtyInput value={qty} max={p.stock} onChange={(v) => setQty(p.id, v)} />
+                )}
+                <button
+                  onClick={() => handleAddToBasket(p)}
+                  disabled={p.stock <= 0}
+                  style={{ padding: '0.6rem', background: justAdded ? '#4CAF50' : (p.stock > 0 ? '#E91E63' : '#ccc'), color: 'white', fontWeight: '600', border: 'none', borderRadius: '25px', cursor: p.stock > 0 ? 'pointer' : 'not-allowed', fontFamily: 'Outfit', transition: 'background 0.2s' }}>
+                  {justAdded ? '✓ Added!' : (p.stock > 0 ? 'Add to Basket' : 'Unavailable')}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
                 </div>
                 {p.stock > 0 && (
                   <QtyInput value={qty} onChange={(v) => setQty(p.id, v)} />
