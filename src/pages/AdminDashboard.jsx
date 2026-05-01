@@ -42,18 +42,46 @@ export default function AdminDashboard() {
   const [graphData, setGraphData] = useState([]);
   const [graphLoading, setGraphLoading] = useState(true);
 
+  const [dateRange, setDateRange] = useState('30');
+
   useEffect(() => {
     if (auth.role !== 'Admin') {
       navigate('/');
     } else {
       fetchData();
     }
-  }, [auth]);
+  }, [auth, dateRange]);
+
+  const getDateRangeParams = () => {
+    if (dateRange === 'all') {
+      return {
+        summaryQuery: '',
+        graphQuery: '?period=daily&range=3650',
+      };
+    }
+
+    return {
+      summaryQuery: `?start_date=${getStartDate(dateRange)}&end_date=${getTodayDate()}`,
+      graphQuery: `?period=daily&range=${dateRange}`,
+    };
+  };
+
+  const getTodayDate = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  const getStartDate = (days) => {
+    const date = new Date();
+    date.setDate(date.getDate() - Number(days));
+    return date.toISOString().split('T')[0];
+  };
 
   const fetchData = async () => {
     try {
-    setStatsLoading(true);
-    setGraphLoading(true);
+      setStatsLoading(true);
+      setGraphLoading(true);
+
+      const { summaryQuery, graphQuery } = getDateRangeParams();
 
       const catRes = await api.get('/api/categories/');
       setCategories(catRes.data.categories);
@@ -61,10 +89,10 @@ export default function AdminDashboard() {
 
       setProducts(prodRes.data.products);
 
-      const statsRes = await api.get('/api/admin/stats/summary/');
+      const statsRes = await api.get(`/api/admin/stats/summary/${summaryQuery}`);
       setStats(statsRes.data);
 
-      const graphRes = await api.get('/api/admin/stats/graph-data/?period=daily&range=30');
+      const graphRes = await api.get(`/api/admin/stats/graph-data/${graphQuery}`);
       setGraphData(graphRes.data);
 
     } catch(e) { 
@@ -74,7 +102,7 @@ export default function AdminDashboard() {
       setGraphLoading(false);
     }
   }
-
+  
   // --- CATEGORY LOGIC ---
   const handleAddCategory = async (e) => {
     e.preventDefault();
@@ -325,6 +353,12 @@ export default function AdminDashboard() {
     );
   };
 
+  const getYTD = () => {
+    const today = new Date();
+    const startOfYear = new Date(today.getFullYear(), 0, 1);
+    return Math.ceil((today - startOfYear) / (1000 * 60 * 60 * 24));
+  };
+
   // --- RENDERERS ---
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.keywords.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -333,6 +367,39 @@ export default function AdminDashboard() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'Outfit' }}>
       <h1 style={{ color: '#333', fontSize: '2.5rem', fontWeight: '700', marginBottom: '1rem' }}>Admin System</h1>
+
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '0.5rem',
+        marginBottom: '1rem'
+      }}>
+        {[
+          { label: '7D', value: '7' },
+          { label: '30D', value: '30' },
+          { label: 'YTD', value: String(getYTD()) },
+          { label: 'All Time', value: 'all' },
+        ].map((range) => (
+          <button
+            key={range.label}
+            onClick={() => setDateRange(range.value)}
+            style={{
+              padding: '0.5rem 1rem',
+              borderRadius: '20px',
+              border: 'none',
+              cursor: 'pointer',
+              fontFamily: 'Outfit',
+              fontWeight: '600',
+              background: dateRange === range.value ? '#333' : '#f4f4f4',
+              color: dateRange === range.value ? '#fff' : '#555'
+            }}
+          >
+            {range.label}
+          </button>
+        ))}
+      </div>
+
+
       <div style={{ display: 'flex', gap: '1rem', borderBottom: '2px solid #eee', paddingBottom: '1rem', marginBottom: '2rem' }}>
         <button onClick={()=>setActiveTab('products')} style={{ padding: '0.6rem 1.2rem', background: activeTab==='products'?'#333':'#f4f4f4', color: activeTab==='products'?'white':'#555', border: 'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', transition: 'all 0.2s', boxShadow: activeTab==='products'?'0 4px 6px rgba(0,0,0,0.1)':'none' }}>Products Inventory</button>
         <button onClick={()=>setActiveTab('categories')} style={{ padding: '0.6rem 1.2rem', background: activeTab==='categories'?'#333':'#f4f4f4', color: activeTab==='categories'?'white':'#555', border: 'none', borderRadius: '25px', cursor: 'pointer', fontFamily: 'Outfit', fontWeight: '600', transition: 'all 0.2s', boxShadow: activeTab==='categories'?'0 4px 6px rgba(0,0,0,0.1)':'none' }}>Category Management</button>
