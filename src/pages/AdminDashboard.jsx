@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { DollarSign, ShoppingCart, Users } from "lucide-react";
+import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,} from "recharts";
 
 const BACKEND_URL = 'http://localhost:8000';
 const FALLBACK = 'https://placehold.co/150x150?text=No+Img';
@@ -38,6 +39,9 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const [graphData, setGraphData] = useState([]);
+  const [graphLoading, setGraphLoading] = useState(true);
+
   useEffect(() => {
     if (auth.role !== 'Admin') {
       navigate('/');
@@ -49,6 +53,7 @@ export default function AdminDashboard() {
   const fetchData = async () => {
     try {
     setStatsLoading(true);
+    setGraphLoading(true);
 
       const catRes = await api.get('/api/categories/');
       setCategories(catRes.data.categories);
@@ -59,10 +64,14 @@ export default function AdminDashboard() {
       const statsRes = await api.get('/api/admin/stats/summary/');
       setStats(statsRes.data);
 
+      const graphRes = await api.get('/api/admin/stats/graph-data/?period=daily&range=30');
+      setGraphData(graphRes.data);
+
     } catch(e) { 
       console.error("Error fetching admin data", e); 
     } finally {
       setStatsLoading(false);
+      setGraphLoading(false);
     }
   }
 
@@ -284,6 +293,38 @@ export default function AdminDashboard() {
     );
   }
 
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload || payload.length === 0) return null;
+
+    return (
+      <div style={{
+        background: '#fff',
+        padding: '0.8rem',
+        borderRadius: '12px',
+        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+        border: '1px solid #eee'
+      }}>
+        <p style={{ margin: 0, fontWeight: '700' }}>
+          Date: {formatDate(label)}
+        </p>
+        {payload.map((item) => (
+          <p key={item.dataKey} style={{ margin: '0.3rem 0' }}>
+            {item.name}: {item.dataKey === 'revenue'
+              ? formatCurrency(item.value)
+              : formatNumber(item.value)}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
   // --- RENDERERS ---
   const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.keywords.toLowerCase().includes(searchTerm.toLowerCase()));
 
@@ -329,6 +370,78 @@ export default function AdminDashboard() {
           </>
         )}
       </div>
+
+      {activeTab === 'products' && (
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: '1.5rem',
+          marginBottom: '2rem'
+        }}>
+          {/* Revenue Chart */}
+          <div style={{
+            background: '#fff',
+            padding: '1.5rem',
+            borderRadius: '18px',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+            border: '1px solid #f1f1f1'
+          }}>
+            <h2>Revenue Trend</h2>
+
+            {graphLoading ? (
+              <div style={{ height: '280px', background: '#eee', borderRadius: '12px' }} />
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <AreaChart data={graphData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickFormatter={formatDate} />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    name="Revenue"
+                    stroke="#22c55e"
+                    fill="#22c55e"
+                    fillOpacity={0.2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+
+          {/* Orders Chart */}
+          <div style={{
+            background: '#fff',
+            padding: '1.5rem',
+            borderRadius: '18px',
+            boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
+            border: '1px solid #f1f1f1'
+          }}>
+            <h2>Orders Trend</h2>
+
+            {graphLoading ? (
+              <div style={{ height: '280px', background: '#eee', borderRadius: '12px' }} />
+            ) : (
+              <ResponsiveContainer width="100%" height={280}>
+                <LineChart data={graphData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" tickFormatter={formatDate} />
+                  <YAxis />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line
+                    type="monotone"
+                    dataKey="orders"
+                    name="Orders"
+                    stroke="#3B82F6"
+                    strokeWidth={3}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </div>
+      )}
 
       {activeTab === 'categories' && (
         <div>
