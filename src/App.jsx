@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link, useNavigate } from "react-router-dom";
 import BackendHealth from "./pages/BackendHealth";
 import DBHealth from "./pages/DBHealth";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -31,6 +31,17 @@ const GlobalStyle = () => (
 function Navbar() {
   const { auth, logout } = useAuth();
   const { totalItems } = useCart();
+  const navigate = useNavigate();
+  const [searchInput, setSearchInput] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchInput.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchInput.trim())}`);
+    } else {
+      navigate(`/`);
+    }
+  };
   
   return (
     <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#FFFFFF', padding: '1rem 2.5rem', color: '#333', boxShadow: '0 2px 15px rgba(233,30,99,0.08)' }}>
@@ -44,6 +55,21 @@ function Navbar() {
         </div>
       </div>
       
+      <div style={{ display: 'flex', flex: 1, justifyContent: 'center', padding: '0 2rem' }}>
+        <form onSubmit={handleSearch} style={{ display: 'flex', width: '100%', maxWidth: '500px', gap: '0.5rem' }}>
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            style={{ flex: 1, padding: '0.6rem 1rem', fontSize: '0.95rem', borderRadius: '20px', border: '1px solid #F8BBD0', outlineColor: '#E91E63', fontFamily: 'Outfit' }}
+          />
+          <button type="submit" style={{ width: '38px', height: '38px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F8BBD0', color: '#D81B60', border: 'none', borderRadius: '50%', cursor: 'pointer', fontSize: '1rem', transition: 'all 0.2s', alignSelf: 'center', flexShrink: 0, boxShadow: '0 2px 5px rgba(233,30,99,0.15)' }}>
+            ➜
+          </button>
+        </form>
+      </div>
+
       <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', fontWeight: '500' }}>
         {auth.role === 'Admin' && (
           <Link to="/admin" style={{ color: '#D81B60', textDecoration: 'none', fontWeight: '700' }}>Admin Dashboard</Link>
