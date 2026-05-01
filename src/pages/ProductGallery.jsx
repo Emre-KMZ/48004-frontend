@@ -165,22 +165,3 @@ export default function ProductGallery() {
     </div>
   );
 }
-
-                </div>
-                {p.stock > 0 && (
-                  <QtyInput value={qty} onChange={(v) => setQty(p.id, v)} />
-                )}
-                <button
-                  onClick={() => handleAddToBasket(p)}
-                  disabled={p.stock <= 0}
-                  style={{ padding: '0.6rem', background: justAdded ? '#4CAF50' : (p.stock > 0 ? '#E91E63' : '#ccc'), color: 'white', fontWeight: '600', border: 'none', borderRadius: '25px', cursor: p.stock > 0 ? 'pointer' : 'not-allowed', fontFamily: 'Outfit', transition: 'background 0.2s' }}>
-                  {justAdded ? '✓ Added!' : (p.stock > 0 ? 'Add to Basket' : 'Unavailable')}
-                </button>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
