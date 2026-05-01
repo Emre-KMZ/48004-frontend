@@ -7,7 +7,8 @@ import api from '../api/axios';
 const FALLBACK_IMAGE = 'https://placehold.co/600x400/eeeeee/999999?text=No+Image+Available';
 const BACKEND_URL = 'http://localhost:8000';
 
-function QtyInput({ value, onChange }) {
+function QtyInput({ value, max, onChange }) {
+  const disableIncrement = value >= max;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
       <button
@@ -17,8 +18,9 @@ function QtyInput({ value, onChange }) {
       </button>
       <span style={{ minWidth: '24px', textAlign: 'center', fontSize: '0.9rem', fontWeight: '600' }}>{value}</span>
       <button
-        onClick={() => onChange(value + 1)}
-        style={{ width: '26px', height: '26px', border: '1px solid #F8BBD0', background: '#FFF5F8', color: '#D81B60', borderRadius: '6px', cursor: 'pointer', fontSize: '1rem', fontWeight: '700', lineHeight: 1 }}>
+        onClick={() => onChange(Math.min(max, value + 1))}
+        disabled={disableIncrement}
+        style={{ width: '26px', height: '26px', border: '1px solid #F8BBD0', background: '#FFF5F8', color: '#D81B60', borderRadius: '6px', cursor: disableIncrement ? 'not-allowed' : 'pointer', opacity: disableIncrement ? 0.4 : 1, fontSize: '1rem', fontWeight: '700', lineHeight: 1 }}>
         +
       </button>
     </div>
@@ -65,14 +67,20 @@ export default function ProductGallery({ sidebarOpen }) {
   const getQty = (productId) => quantities[productId] || 1;
 
   const setQty = (productId, value) => {
-    setQuantities(prev => ({ ...prev, [productId]: value }));
+    const product = products.find(p => p.id === productId);
+    const max = Math.max(1, Number(product?.stock || 1));
+    setQuantities(prev => ({ ...prev, [productId]: Math.min(max, Math.max(1, value)) }));
   };
 
   const handleAddToBasket = async (product) => {
     if (product.stock <= 0) return;
-    await addItem(product, getQty(product.id));
-    setAddedMap(prev => ({ ...prev, [product.id]: true }));
-    setTimeout(() => setAddedMap(prev => ({ ...prev, [product.id]: false })), 1500);
+    try {
+      await addItem(product, Math.min(getQty(product.id), product.stock));
+      setAddedMap(prev => ({ ...prev, [product.id]: true }));
+      setTimeout(() => setAddedMap(prev => ({ ...prev, [product.id]: false })), 1500);
+    } catch (err) {
+      setError(err.message || 'Unable to add product to basket.');
+    }
   };
 
   return (
@@ -144,7 +152,7 @@ export default function ProductGallery({ sidebarOpen }) {
                       {p.stock > 0 ? `${p.stock} units available` : 'Out of stock!'}
                     </div>
                     {p.stock > 0 && (
-                      <QtyInput value={qty} onChange={(v) => setQty(p.id, v)} />
+                      <QtyInput value={qty} max={p.stock} onChange={(v) => setQty(p.id, v)} />
                     )}
                     <button
                       onClick={() => handleAddToBasket(p)}
